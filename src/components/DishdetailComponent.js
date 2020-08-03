@@ -20,9 +20,9 @@ function RenderDish({dish}) {
         return (<div></div>)
     }
 }
-function RenderComments({comments}) {
-    if(comments != null)
-        return(
+function RenderComments({ comments }) {
+    if (comments != null) {
+        return (
             <div className="col-12 col-md-5 m-1">
                 <h4>Comments</h4>
                 <ul className="list-unstyled">
@@ -41,34 +41,7 @@ function RenderComments({comments}) {
                 </ul>
             </div>
         );
-    /* const cmnts = comments.map(comment => {
-        return (
-            <div key={comment.id}>
-                <p>{comment.comment}</p>
-                <p>-- {comment.author},
-                    &nbsp;
-                    {new Intl.DateTimeFormat('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: '2-digit'
-                }).format(new Date(Date.parse(comment.date)))}
-                </p>
-            </div>
-        )
-    })
-    if (comments != null) {
-        return (
-            <div className='col-12 col-md-5 m-1'>
-                <h4> Comments </h4>
-                <div>
-                    {cmnts}
-                </div>
-
-            </div>
-        )
-    } else {
-        return (<div></div>);
-    } */
+    }
 }
 
 const Dishdetail = (props) => {
