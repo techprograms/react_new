@@ -3,39 +3,48 @@ import { Card, CardImg, CardText, CardBody, CardTitle, Breadcrumb, BreadcrumbIte
 import { Link } from 'react-router-dom';
 import { Control, LocalForm, Errors } from 'react-redux-form';
 
+import { Loading } from './LoadingComponent';
+
 const required = (val) => val && val.length;
 const maxLength = (len) => (val) => !(val) || (val.length <= len)
 const minLength = (len) => (val) => (val) && (val.length >= len)
 
 class CommentForm extends React.Component {
+
     constructor(props) {
         super(props)
+
         this.state = {
-            modal: false
+            isModelOpen: false
         }
 
         this.handleSubmit = this.handleSubmit.bind(this)
-        this.toggle = this.toggle.bind(this)
+        this.toggleModal = this.toggleModal.bind(this)
     }
 
-    handleSubmit = (values) => {
-        alert(JSON.stringify(values))
+    handleSubmit(values) {
+        this.toggleModal();
+        this.props.addComment(this.props.dishId, values.rating, values.author, values.comment);
     }
 
-    toggle = () => this.setState({ modal: !(this.state.modal) })
+    toggleModal() {
+        this.setState({
+            isModelOpen: !this.state.toggleModal
+        });
+    }
 
     render() {
         return (
             <div>
-                <Button onClick={this.toggle} outline color='secondary'><i className='fa fa-lg fa-edit'></i>Submit comment</Button>
-                <Modal isOpen={this.state.modal} toggle={this.toggle} className='commentForm'>
-                    <ModalHeader toggle={this.toggle}>
+                <Button outline onClick={this.toggleModal}><span className='fa fa-lg fa-pencil'></span>Submit comment</Button>
+                <Modal isOpen={this.state.isModelOpen} toggle={this.toggleModal} className='commentForm'>
+                    <ModalHeader toggle={this.toggleModal}>
                         Submit Comment
-          </ModalHeader>
+                    </ModalHeader>
                     <ModalBody>
                         <LocalForm onSubmit={values => this.handleSubmit(values)}>
                             <Row className='form-group'>
-                                <Col md={12}>
+                                <Col>
                                     <Label>
                                         Rating
                                     </Label>
@@ -49,7 +58,7 @@ class CommentForm extends React.Component {
                                 </Col>
                             </Row>
                             <Row className='form-group'>
-                                <Col md={12}>
+                                <Col>
                                     <Label htmlFor='name'>Your name</Label>
                                     <Control.text model='.name'
                                         id='name' name='name'
@@ -72,14 +81,14 @@ class CommentForm extends React.Component {
                                 </Col>
                             </Row>
                             <Row className='form-group'>
-                                <Col md={12}>
+                                <Col>
                                     <Label htmlFor='message'>Comment</Label>
                                     <Control.textarea model='.message' id='message' name='message' rows='6' className='form-control' />
                                 </Col>
                             </Row>
                             <Row className='form-group'>
-                                <Col md={12}>
-                                    <Button type='submit' color='primary' onClick={this.toggle}>
+                                <Col>
+                                    <Button type='submit' color='primary' onClick={this.toggleModal}>
                                         Submit
                                     </Button>
                                 </Col>
@@ -93,32 +102,30 @@ class CommentForm extends React.Component {
 }
 
 
-function RenderComments({ comments }) {
-    if (comments == null) {
-        return (<div></div>);
-    }
-    var com = comments.map(comment => {
-        return (
-            <li key={comment.id}>
-                <p>{comment.comment}</p>
-                <p>--{comment.author},
+function RenderComments({ comments, addComment, dishId }) {
+    if (comments != null)
+        var com = comments.map(comment => {
+            return (
+                <li key={comment.id}>
+                    <p>{comment.comment}</p>
+                    <p>--{comment.author},
           &nbsp;
           {new Intl.DateTimeFormat('en-US', {
-                    month: 'short',
-                    year: 'numeric',
-                    day: '2-digit'
-                }).format(new Date(Date.parse(comment.date)))}
-                </p>
-            </li>
-        );
-    })
+                        month: 'short',
+                        year: 'numeric',
+                        day: '2-digit'
+                    }).format(new Date(Date.parse(comment.date)))}
+                    </p>
+                </li>
+            );
+        })
     return (
         <div className='col-12 col-md-5 m-1'>
             <h4>Comments</h4>
             <ul className='list-unstyled'>
                 {com}
             </ul>
-            <CommentForm />
+            <CommentForm dishId={dishId} addComment={addComment} />
         </div>
     );
 
@@ -142,25 +149,49 @@ function RenderDish({ dish }) {
 }
 
 const DishDetail = (props) => {
-
-    return (
-        <div className='container'>
-            <div className='row'>
-                <Breadcrumb>
-                    <BreadcrumbItem><Link to='/menu'>Menu</Link></BreadcrumbItem>
-                    <BreadcrumbItem active>{props.dish.name}</BreadcrumbItem>
-                </Breadcrumb>
-                <div className='col-12'>
-                    <h3>{props.dish.name}</h3>
-                    <hr />
+    if (props.isLoading) {
+        return (
+            <div className="container">
+                <div className="row">
+                    <Loading />
                 </div>
             </div>
-            <div className='row'>
-                <RenderDish dish={props.dish} />
-                <RenderComments comments={props.comments} />
+        );
+    }
+    else if (props.errMess) {
+        return (
+            <div className="container">
+                <div className="row">
+                    <h4>{props.errMess}</h4>
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
+    else if (props.dish != null)
+        return (
+            <div className='container'>
+                <div className='row'>
+                    <Breadcrumb>
+                        <BreadcrumbItem><Link to='/menu'>Menu</Link></BreadcrumbItem>
+                        <BreadcrumbItem active>{props.dish.name}</BreadcrumbItem>
+                    </Breadcrumb>
+                    <div className='col-12'>
+                        <h3>{props.dish.name}</h3>
+                        <hr />
+                    </div>
+                </div>
+                <div className='row'>
+                    <RenderDish dish={props.dish} />
+                    <RenderComments comments={props.comments}
+                        addComment={props.addComment}
+                        dishId={props.dish.id} />
+                </div>
+            </div>
+        );
+    else
+        return (
+            <div></div>
+        );
 }
 
 export default DishDetail;
