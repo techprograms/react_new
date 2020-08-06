@@ -5,6 +5,7 @@ import { Control, LocalForm, Errors } from 'react-redux-form';
 
 import { Loading } from './LoadingComponent';
 import { baseUrl } from '../shared/baseUrl';
+import { FadeTransform, Fade, Stagger } from 'react-animation-components';
 
 const required = (val) => val && val.length;
 const maxLength = (len) => (val) => !(val) || (val.length <= len)
@@ -105,22 +106,46 @@ class CommentForm extends React.Component {
 
 function RenderComments({ comments, postComment, dishId }) {
     if (comments != null)
-        var com = comments.map(comment => {
-            return (
-                <li key={comment.id}>
-                    <p>{comment.comment}</p>
-                    <p>--{comment.author},
-          &nbsp;
-          {new Intl.DateTimeFormat('en-US', {
-                        month: 'short',
-                        year: 'numeric',
-                        day: '2-digit'
-                    }).format(new Date(Date.parse(comment.date)))}
-                    </p>
-                </li>
-            );
-        })
-    return (
+        return (
+            <div className="col-12 col-md-5 m-1">
+                <h4>Comments</h4>
+                <ul className="list-unstyled">
+                    <Stagger in>
+                    {comments.map((comment) => {
+                        return (
+                            <Fade in>
+                            <li key={comment.id}>
+                                <p>{comment.comment}</p>
+                                <p>-- {comment.author}, {new Intl.DateTimeFormat('en-US', {
+                                    month: 'short',
+                                    year: 'numeric',
+                                    day: '2-digit'
+                                }).format(new Date(Date.parse(comment.date)))}</p>
+                            </li>
+                            </Fade>
+                        );
+                    })}
+                    </Stagger>
+                </ul>
+                <CommentForm dishId={dishId} postComment={postComment} />
+            </div>
+        )
+    /*  var com = comments.map(comment => {
+         return (
+             <li key={comment.id}>
+                 <p>{comment.comment}</p>
+                 <p>--{comment.author},
+       &nbsp;
+       {new Intl.DateTimeFormat('en-US', {
+                     month: 'short',
+                     year: 'numeric',
+                     day: '2-digit'
+                 }).format(new Date(Date.parse(comment.date)))}
+                 </p>
+             </li>
+         );
+     }) */
+    /* return (
         <div className='col-12 col-md-5 m-1'>
             <h4>Comments</h4>
             <ul className='list-unstyled'>
@@ -128,7 +153,7 @@ function RenderComments({ comments, postComment, dishId }) {
             </ul>
             <CommentForm dishId={dishId} postComment={postComment} />
         </div>
-    );
+    ); */
 
 }
 
@@ -138,6 +163,10 @@ function RenderDish({ dish }) {
     }
     return (
         <div className='col-12 col-md-5 m-1'>
+        <FadeTransform in
+                transformProps={{
+                    exitTransform: 'scale(0.5) translateY(-50%)'
+                }}>
             <Card>
                 <CardImg width='100%' src={baseUrl + dish.image} alt={dish.name} />
                 <CardBody>
@@ -145,6 +174,7 @@ function RenderDish({ dish }) {
                     <CardText>{dish.description}</CardText>
                 </CardBody>
             </Card>
+            </FadeTransform>
         </div>
     )
 }
